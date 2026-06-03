@@ -301,7 +301,8 @@
             return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
     }
-
+listenForMessages();
+    }
     function listenForMessages() {
         const chatRef = db.ref('chats/' + currentRoom).limitToLast(30);
         
