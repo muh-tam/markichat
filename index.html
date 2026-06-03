@@ -175,6 +175,20 @@
             border-radius: 10px;
             font-size: 14px;
         }
+        .msg a {
+            color: #38bdf8; /* Warna cyan untuk pesan orang lain */
+            text-decoration: underline;
+            word-break: break-all; /* Agar link panjang tidak merusak layout */
+        }
+        
+        /* Warna link khusus untuk pesan kita sendiri agar kontras dengan background biru */
+        .msg.self a {
+            color: #e0f2fe; 
+        }
+        
+        .msg a:hover {
+            color: #67e8f9;
+        }
     </style>
 </head>
 <body>
@@ -281,7 +295,11 @@
             localStorage.setItem("chat_session", JSON.stringify(sessionData));
         }
 
-        listenForMessages();
+       function linkify(text) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
     }
 
     function listenForMessages() {
@@ -292,17 +310,16 @@
             const chatBox = document.getElementById('chat-box');
             
             const msgDiv = document.createElement('div');
-            // Cek apakah pesan dari diri sendiri atau orang lain untuk membedakan gaya bubble chat
             if (m.user === user) {
                 msgDiv.className = 'msg self';
             } else {
                 msgDiv.className = 'msg other';
             }
             
-            msgDiv.innerHTML = `<b>${m.user}</b>${m.message}`;
+            // DI SINI PERUBAHANNYA: Membungkus m.message dengan fungsi linkify()
+            msgDiv.innerHTML = `<b>${m.user}</b>${linkify(m.message)}`;
             chatBox.appendChild(msgDiv);
             
-            // Scroll otomatis yang smooth ke chat paling bawah
             chatBox.scrollTo({
                 top: chatBox.scrollHeight,
                 behavior: 'smooth'
