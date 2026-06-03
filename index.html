@@ -301,8 +301,9 @@
             return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
         });
     }
-listenForMessages();
+       listenForMessages();
     }
+
     function listenForMessages() {
         const chatRef = db.ref('chats/' + currentRoom).limitToLast(30);
         
@@ -311,16 +312,17 @@ listenForMessages();
             const chatBox = document.getElementById('chat-box');
             
             const msgDiv = document.createElement('div');
+            // Cek apakah pesan dari diri sendiri atau orang lain untuk membedakan gaya bubble chat
             if (m.user === user) {
                 msgDiv.className = 'msg self';
             } else {
                 msgDiv.className = 'msg other';
             }
             
-            // DI SINI PERUBAHANNYA: Membungkus m.message dengan fungsi linkify()
-            msgDiv.innerHTML = `<b>${m.user}</b>${linkify(m.message)}`;
+            msgDiv.innerHTML = `<b>${m.user}</b>${m.message}`;
             chatBox.appendChild(msgDiv);
             
+            // Scroll otomatis yang smooth ke chat paling bawah
             chatBox.scrollTo({
                 top: chatBox.scrollHeight,
                 behavior: 'smooth'
