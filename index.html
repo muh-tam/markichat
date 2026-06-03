@@ -3,34 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MARKICHAT 3.0</title>
+    <title>MARKICHAT 3.5 by. #Muhtam</title>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Menambahkan font Playfair Display (Untuk Judul) & Plus Jakarta Sans (Untuk Chat) -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f1f5f9; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; justify-content: center; min-height: 100vh; margin: 0; }
-        .container { width: 100%; max-width: 500px; background: var(--card); padding: 20px; display: flex; flex-direction: column; }
-        input, select, button { padding: 12px; margin: 5px 0; border-radius: 8px; border: none; font-size: 16px; }
-        input { background: #334155; color: white; }
-        button { background: var(--accent); color: #0f172a; font-weight: bold; cursor: pointer; }
-        .chat-box { flex-grow: 1; overflow-y: auto; background: #0f172a; border-radius: 8px; padding: 10px; margin: 10px 0; border: 1px solid #334155; min-height: 300px; }
-        .msg { margin-bottom: 10px; padding: 8px; border-radius: 5px; background: #334155; }
-        .msg b { color: var(--accent); display: block; font-size: 12px; }
+        :root { 
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent: #38bdf8; 
+            --accent-hover: #0ea5e9;
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8;
+            --msg-self: #2563eb;
+            --msg-other: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body { 
+            background: var(--bg-gradient); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            height: 100vh; 
+            margin: 0; 
+            padding: 20px;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 480px; 
+            height: 85vh;
+            max-height: 750px;
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px; 
+            display: flex; 
+            flex-direction: column; 
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        #login-screen, #chat-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        h2 {
+           font-family: 'Playfair Display', serif; /* Font estetik yang baru */
+            font-size: 32px;
+            font-style: italic; /* Dibuat miring agar lebih elegan */
+            font-weight: 700;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            
+            /* Warna gradasi yang lebih soft (Putih ke Ungu Pastel) */
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            /* Efek bayangan cahaya (glowing) tipis */
+            filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.4));
+        }
+
+        input, select, button { 
+            padding: 14px; 
+            margin: 6px 0; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            font-size: 15px; 
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input, select { 
+            background: rgba(15, 23, 42, 0.6); 
+            color: white; 
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        button { 
+            background: var(--accent); 
+            color: #0f172a; 
+            font-weight: 600; 
+            cursor: pointer; 
+            border: none;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* PERBAIKAN CHAT BOX (Bisa Discroll & Rapi) */
+        .chat-box { 
+            flex: 1; 
+            overflow-y: auto; 
+            background: rgba(15, 23, 42, 0.4); 
+            border-radius: 16px; 
+            padding: 16px; 
+            margin: 16px 0; 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Custom Scrollbar agar lebih estetik */
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-box::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        /* Bubble Chat Elegan (Pembeda Kiri & Kanan) */
+        .msg { 
+            max-width: 80%; 
+            padding: 10px 14px; 
+            border-radius: 16px; 
+            font-size: 14px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .msg.other {
+            background: var(--msg-other);
+            align-self: flex-start;
+            border-top-left-radius: 4px;
+        }
+
+        .msg.self {
+            background: var(--msg-self);
+            align-self: flex-end;
+            border-top-right-radius: 4px;
+        }
+
+        .msg b { 
+            display: block; 
+            font-size: 11px; 
+            color: var(--accent); 
+            margin-bottom: 3px;
+        }
+
+        .msg.self b {
+            color: #67e8f9;
+            text-align: right;
+        }
+
         .hidden { display: none !important; }
-        .room-info { text-align: center; font-weight: bold; color: var(--accent); margin-bottom: 10px; }
+
+        .room-info { 
+            text-align: center; 
+            font-weight: 600; 
+            color: var(--accent); 
+            background: rgba(56, 189, 248, 0.1);
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Screen Login -->
     <div id="login-screen">
-        <h2 style="text-align: center;">MARKICHAT 3.0 by. #Muhtam</h2>
+        <h2>Markichat 3.5 by. #Muhtam</h2>
         <input type="text" id="username" placeholder="Username Anda">
         
         <div style="display: flex; gap: 10px;">
             <select id="letter" style="flex: 1;">
                 <script>
-                    for(let i=65; i<=90; i++) document.write(`<option value="${String.fromCharCode(i)}">${String.fromCharCode(i)}</option>`);
+                    for(let i=65; i<=90; i++) document.write(`<option value="${String.fromCharCode(i)}">${String.fromCharCode(i)}</optionblank>`);
                 </script>
             </select>
             <input type="number" id="digit" placeholder="3 Digit (000-999)" style="flex: 2;" min="0" max="999">
@@ -39,127 +206,165 @@
         <button onclick="joinChat()">Masuk Ruangan</button>
     </div>
 
+    <!-- Screen Chat -->
     <div id="chat-screen" class="hidden">
         <div class="room-info" id="current-room-display">Room: A-001</div>
         <div class="chat-box" id="chat-box"></div>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="message-input" placeholder="Ketik pesan..." style="flex-grow: 1;">
-            <button onclick="sendMessage()">Kirim</button>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="message-input" placeholder="Ketik pesan..." style="flex-grow: 1; margin: 0;">
+            <button onclick="sendMessage()" style="margin: 0; padding: 0 20px;">Kirim</button>
         </div>
-        <button onclick="location.reload()" style="background: #ef4444; margin-top: 10px;">Keluar</button>
+        <button onclick="logout()" style="background: #ef4444; color: white; margin-top: 12px;">Keluar</button>
     </div>
 </div>
 
 <script>
     // --- KONFIGURASI FIREBASE ---
-    // GANTI DENGAN PUNYA ANDA SENDIRI DARI FIREBASE CONSOLE
-   const firebaseConfig = {
-  apiKey: "AIzaSyC3M6Me_pBwykr3Y-EAEnJGQlOE3U7fMCo",
-  authDomain: "markichat.firebaseapp.com",
-  projectId: "markichat",
-  databaseURL: "https://markichat-default-rtdb.asia-southeast1.firebasedatabase.app",
-  storageBucket: "markichat.firebasestorage.app",
-  messagingSenderId: "447816707968",
-  appId: "1:447816707968:web:1ec43ae950702e946e5b65",
-  measurementId: "G-FZBDG67QLV"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyC3M6Me_pBwykr3Y-EAEnJGQlOE3U7fMCo",
+        authDomain: "markichat.firebaseapp.com",
+        projectId: "markichat",
+        databaseURL: "https://markichat-default-rtdb.asia-southeast1.firebasedatabase.app",
+        storageBucket: "markichat.firebasestorage.app",
+        messagingSenderId: "447816707968",
+        appId: "1:447816707968:web:1ec43ae950702e946e5b65",
+        measurementId: "G-FZBDG67QLV"
+    };
     
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-let currentRoom = "";
-let user = "";
-let isFirstLoad = true; // Untuk mencegah notifikasi membanjir saat pertama buka chat
+    let currentRoom = "";
+    let user = "";
+    let isFirstLoad = true; 
 
-// 1. Minta Izin Notifikasi saat halaman dimuat
-if ("Notification" in window) {
-    Notification.requestPermission();
-}
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 
-// Efek Suara (Opsional: Gunakan link mp3 yang valid)
-const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+    const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
 
-function joinChat() {
-    user = document.getElementById('username').value.trim();
-    const letter = document.getElementById('letter').value;
-    let digit = document.getElementById('digit').value.padStart(3, '0');
+    // Cek sesi login saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+        checkSavedSession();
+    });
 
-    if(!user || !digit) return alert("Isi username dan 3 digit!");
-    
-    currentRoom = `${letter}_${digit}`;
-    document.getElementById('current-room-display').innerText = `Ruangan: ${letter} - ${digit}`;
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('chat-screen').classList.remove('hidden');
-
-    listenForMessages();
-}
-
-function listenForMessages() {
-    // Menggunakan limitToLast agar tidak berat saat chat sudah banyak
-    const chatRef = db.ref('chats/' + currentRoom).limitToLast(20);
-    
-    chatRef.on('child_added', (snapshot) => {
-        const m = snapshot.val();
-        const chatBox = document.getElementById('chat-box');
-        
-        // Tampilkan di layar
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg';
-        msgDiv.innerHTML = `<b>${m.user}</b>${m.message}`;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        // 2. Logika Notifikasi
-        // Kirim notifikasi HANYA JIKA:
-        // - Bukan pesan dari diri sendiri
-        // - Bukan saat loading awal (isFirstLoad = false)
-        if (!isFirstLoad && m.user !== user) {
-            sendNotification(m.user, m.message);
+    function checkSavedSession() {
+        const session = localStorage.getItem("chat_session");
+        if (session) {
+            const sessionData = JSON.parse(session);
+            const now = Date.now();
+            
+            // Cek apakah sesi belum melewati 24 jam (24 * 60 * 60 * 1000 ms)
+            if (now - sessionData.loginTime < 86400000) {
+                document.getElementById('username').value = sessionData.user;
+                document.getElementById('letter').value = sessionData.letter;
+                document.getElementById('digit').value = sessionData.digit;
+                joinChat(true); // Masuk otomatis
+            } else {
+                localStorage.removeItem("chat_session"); // Hapus jika sudah basi
+            }
         }
-    });
+    }
 
-    // Set isFirstLoad ke false setelah data awal selesai dimuat
-    chatRef.once('value', () => {
-        isFirstLoad = false;
-    });
-}
+    function joinChat(isAutoLogin = false) {
+        user = document.getElementById('username').value.trim();
+        const letter = document.getElementById('letter').value;
+        let digit = document.getElementById('digit').value.padStart(3, '0');
 
-function sendNotification(sender, message) {
-    // Mainkan Suara
-    notificationSound.play();
+        if(!user || !digit) return alert("Isi username dan 3 digit!");
+        
+        currentRoom = `${letter}_${digit}`;
+        document.getElementById('current-room-display').innerText = `Ruangan: ${letter} - ${digit}`;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('chat-screen').classList.remove('hidden');
 
-    // Notifikasi Visual Browser
-    if (Notification.permission === "granted") {
-        const notif = new Notification(`Pesan baru dari ${sender}`, {
-            body: message,
-            icon: 'https://cdn-icons-png.flaticon.com/512/733/733585.png' // Icon bebas
+        // Simpan sesi baru ke localStorage jika bukan dari auto-login
+        if (!isAutoLogin) {
+            const sessionData = {
+                user: user,
+                letter: letter,
+                digit: digit,
+                loginTime: Date.now()
+            };
+            localStorage.setItem("chat_session", JSON.stringify(sessionData));
+        }
+
+        listenForMessages();
+    }
+
+    function listenForMessages() {
+        const chatRef = db.ref('chats/' + currentRoom).limitToLast(30);
+        
+        chatRef.on('child_added', (snapshot) => {
+            const m = snapshot.val();
+            const chatBox = document.getElementById('chat-box');
+            
+            const msgDiv = document.createElement('div');
+            // Cek apakah pesan dari diri sendiri atau orang lain untuk membedakan gaya bubble chat
+            if (m.user === user) {
+                msgDiv.className = 'msg self';
+            } else {
+                msgDiv.className = 'msg other';
+            }
+            
+            msgDiv.innerHTML = `<b>${m.user}</b>${m.message}`;
+            chatBox.appendChild(msgDiv);
+            
+            // Scroll otomatis yang smooth ke chat paling bawah
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: 'smooth'
+            });
+
+            if (!isFirstLoad && m.user !== user) {
+                sendNotification(m.user, m.message);
+            }
         });
 
-        // Klik notifikasi untuk balik ke tab chat
-        notif.onclick = () => {
-            window.focus();
-            notif.close();
-        };
+        chatRef.once('value', () => {
+            isFirstLoad = false;
+        });
     }
-}
 
-function sendMessage() {
-    const msgInput = document.getElementById('message-input');
-    const text = msgInput.value.trim();
-    if(!text) return;
+    function sendNotification(sender, message) {
+        notificationSound.play().catch(e => console.log("Menunggu interaksi user untuk play audio"));
 
-    db.ref('chats/' + currentRoom).push({
-        user: user,
-        message: text,
-        timestamp: Date.now()
+        if (Notification.permission === "granted") {
+            const notif = new Notification(`Pesan baru dari ${sender}`, {
+                body: message,
+                icon: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+            });
+
+            notif.onclick = () => {
+                window.focus();
+                notif.close();
+            };
+        }
+    }
+
+    function sendMessage() {
+        const msgInput = document.getElementById('message-input');
+        const text = msgInput.value.trim();
+        if(!text) return;
+
+        db.ref('chats/' + currentRoom).push({
+            user: user,
+            message: text,
+            timestamp: Date.now()
+        });
+
+        msgInput.value = "";
+    }
+
+    function logout() {
+        localStorage.removeItem("chat_session"); // Hapus sesi saat klik keluar
+        location.reload();
+    }
+
+    document.getElementById('message-input').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') sendMessage();
     });
-
-    msgInput.value = "";
-}
-
-document.getElementById('message-input').addEventListener('keypress', (e) => {
-    if(e.key === 'Enter') sendMessage();
-});
 </script>
 
 </body>
